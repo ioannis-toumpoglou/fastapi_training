@@ -60,8 +60,24 @@ async def get_all_books():
     """
     return BOOKS
 
+@app.get("/books/{book_id}")
+async def get_book(book_id: int):
+    for book in BOOKS:
+        if book.id == book_id:
+            return book
+    return None
 
-@app.post("/create_book")
+
+@app.get("/books/")
+async def get_book_by_rating(book_rating: int):
+    books_to_return = []
+    for book in BOOKS:
+        if book.rating == book_rating:
+            books_to_return.append(book)
+    return books_to_return
+
+
+@app.post("/create-book")
 async def create_book(book_request: BookRequest):
     # Convert request to Book object
     new_book = Book(**book_request.model_dump())
@@ -71,3 +87,9 @@ async def create_book(book_request: BookRequest):
 def find_book_id(book: Book):
     book.id = 1 if len(BOOKS) == 0 else BOOKS[-1].id + 1
     return book
+
+@app.put("/books/update-book")
+async def update_book(book: BookRequest):
+    for i in range(len(BOOKS)):
+        if BOOKS[i].id == book.id:
+            BOOKS[i] = book
