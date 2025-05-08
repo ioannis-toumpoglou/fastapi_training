@@ -1,9 +1,8 @@
 """
 A test case used for training on the FastAPI framework
 """
-
 from typing import Optional
-from fastapi import FastAPI, Path, Query
+from fastapi import FastAPI, Path, Query, HTTPException
 from pydantic import BaseModel, Field
 
 
@@ -73,7 +72,7 @@ async def get_all_books():
 
 
 @app.get("/books/{book_id}")
-async def get_book(book_id: int = Path(gt=0)) -> Book | None:
+async def get_book(book_id: int = Path(gt=0)):
     """
     Returns book by ID
     :param book_id: the ID of book
@@ -81,11 +80,11 @@ async def get_book(book_id: int = Path(gt=0)) -> Book | None:
     for book in BOOKS:
         if book.id == book_id:
             return book
-    return None
+    raise HTTPException(status_code=404, detail="Book not found")
 
 
 @app.get("/books/")
-async def get_book_by_rating(book_rating: int = Query(gt=0, lt=6)) -> list[Book]:
+async def get_book_by_rating(book_rating: int = Query(gt=0, lt=6)):
     """
     Returns book by rating
     :param book_rating: the rating of book
@@ -136,9 +135,13 @@ async def update_book(book: BookRequest):
     Updates a book
     :param book: BookRequest
     """
+    book_changed = False
     for i in range(len(BOOKS)):
         if BOOKS[i].id == book.id:
             BOOKS[i] = book
+            book_changed = True
+    if not book_changed:
+        raise HTTPException(status_code=404, detail="Book not found")
 
 
 @app.delete("/books/{book_id}")
@@ -147,7 +150,11 @@ async def delete_book(book_id: int = Path(gt=0)):
     Deletes a book
     :param book_id: the ID of the target book
     """
+    book_changed = False
     for i in range(len(BOOKS)):
         if BOOKS[i].id == book_id:
             BOOKS.pop(i)
+            book_changed = True
             break
+    if not book_changed:
+        raise HTTPException(status_code=404, detail="Book not found")
