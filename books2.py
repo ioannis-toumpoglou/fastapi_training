@@ -4,6 +4,7 @@ A test case used for training on the FastAPI framework
 from typing import Optional
 from fastapi import FastAPI, Path, Query, HTTPException
 from pydantic import BaseModel, Field
+from starlette import status
 
 
 app = FastAPI()
@@ -63,7 +64,7 @@ BOOKS = [
 ]
 
 
-@app.get("/books")
+@app.get("/books", status_code=status.HTTP_200_OK)
 async def get_all_books():
     """
     Returns all books
@@ -71,7 +72,7 @@ async def get_all_books():
     return BOOKS
 
 
-@app.get("/books/{book_id}")
+@app.get("/books/{book_id}", status_code=status.HTTP_200_OK)
 async def get_book(book_id: int = Path(gt=0)):
     """
     Returns book by ID
@@ -83,7 +84,7 @@ async def get_book(book_id: int = Path(gt=0)):
     raise HTTPException(status_code=404, detail="Book not found")
 
 
-@app.get("/books/")
+@app.get("/books/", status_code=status.HTTP_200_OK)
 async def get_book_by_rating(book_rating: int = Query(gt=0, lt=6)):
     """
     Returns book by rating
@@ -96,7 +97,7 @@ async def get_book_by_rating(book_rating: int = Query(gt=0, lt=6)):
     return books_to_return
 
 
-@app.post("/create-book")
+@app.post("/create-book", status_code=status.HTTP_201_CREATED)
 async def create_book(book_request: BookRequest):
     """
     Creates a new book
@@ -107,7 +108,7 @@ async def create_book(book_request: BookRequest):
     BOOKS.append(find_book_id(new_book))
 
 
-@app.get("/books/publish/")
+@app.get("/books/publish/", status_code=status.HTTP_200_OK)
 async def get_book_by_published_date(published_date: int = Query(gt=1900, lt=2031)):
     """
     Returns book by date of publication
@@ -129,7 +130,7 @@ def find_book_id(book: Book):
     return book
 
 
-@app.put("/books/update-book")
+@app.put("/books/update-book", status_code=status.HTTP_204_NO_CONTENT)
 async def update_book(book: BookRequest):
     """
     Updates a book
@@ -144,7 +145,7 @@ async def update_book(book: BookRequest):
         raise HTTPException(status_code=404, detail="Book not found")
 
 
-@app.delete("/books/{book_id}")
+@app.delete("/books/{book_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_book(book_id: int = Path(gt=0)):
     """
     Deletes a book
